@@ -13,8 +13,8 @@ class Node(object):
     Each node points to a parent node, unless tax_id = 0.
 
     """
-    
-    def __init__(self, taxid, scientific_name, upper_hierarchy, node_type):
+
+    def __init__(self, taxid, scientific_name, upper_hierarchy, node_type=None):
         self.taxid = taxid
         self.scientific_name = scientific_name
         self.upper_hierarchy = upper_hierarchy
@@ -29,6 +29,29 @@ class TaxDb(object):
 
     self.database_path = "/dbs/TaxID.mongodb"
 
+    def connect(self):
+        """Opens connection to the database"""
+
+        pass
+
+    def disconnect(self):
+        """Closes connection to the database"""
+
+        pass
+
+    def add_record(self, node: Node):
+        """Method updates database with a new entry.
+
+        Params:
+            protein_acc (str): Protein accession Identifier
+            tax_id (str): Taxonomy Identifier
+
+        Returns:
+            Nothing
+
+        """
+
+        pass
 
     def organism_to_taxid(self, organism_name):
         """Method retrieves taxonomy ID for a query organism name.
@@ -79,29 +102,7 @@ class TaxDb(object):
 
         pass
 
-    def add_record(self, protein_acc, tax_id):
-        """Method updates database with a new entry.
-
-        Params:
-            protein_acc (str): Protein accession Identifier
-            tax_id (str): Taxonomy Identifier
-
-        Returns:
-            Nothing
-
-        """
-
-        pass
-
-    def add_new_lineage(self, tax_id):
-        """Method adds new lineage to a database.
-
-        Params:
-            lineage (str): Lineage to write to a database.
-
-        Returns:
-            Nothing
-
-        """
+    def document_exists(self, node: Node):
+        """Method checks whether the document already exists in the database"""
 
         pass

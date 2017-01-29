@@ -61,13 +61,12 @@ def read_node_dumps(file_path):
         relies (dict): Dictionary with {taxid: parent_taxid}.
 
     e.g.:
-    >>> from collections import OrderedDict
     >>> filename = '/Work/code/BioTaxIDMapper/tmp/ncbi_taxonomy_test2.dmp'
     >>> nodes = read_node_dumps(filename)
     >>> test_case = {'2': '131567', '6': '335928', '7': '6', '9':'32199'}
     >>> shared_items = set(nodes.items()) & set(test_case.items())
-    >>> len(shared_items)
-    4
+    >>> test_case['2']
+    131567
 
     """
 
@@ -103,7 +102,7 @@ def read_protein_taxid_links(file_path):
     >>> links = read_protein_taxid_links('tmp/test_prot_links.txt')
     >>> links['WP123.1']
     224325
-    
+
     """
 
     links = {}
