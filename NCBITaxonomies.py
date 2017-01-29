@@ -91,7 +91,31 @@ def read_node_dumps(file_path):
     return relies
 
 def read_protein_taxid_links(file_path):
+    """Reads protein - taxid links from NCBI link DB.
 
+    Params:
+        file_path (str): Path to a name dmp file.
+
+    Returns:
+        links (dict): Dictionary with {protein_id: taxid}
+
+    e.g.:
+    >>> links = read_protein_taxid_links('tmp/test_prot_links.txt')
+    >>> links['WP123.1']
+    224325
+    
+    """
+
+    links = {}
+
+    with open(file_path, 'r') as in_file:
+        for link in in_file:
+            link = link.strip().split(',')
+            protein_id = link[0]
+            taxid = link[1]
+            links[protein_id] = taxid
+
+    return links
 
 if __name__ == "__main__":
     import doctest

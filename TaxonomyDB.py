@@ -58,7 +58,7 @@ class TaxDb(object):
             lineage (str): Lineage of an organism represented by tax identifier.
 
         e.g.:
-        >>> TaxIdDb.get_lineage_from_db('224325')
+        >>> TaxDb.get_lineage_from_db('224325')
         ['cellular organisms', \
 'Archaea', \
 'Euryarchaeota', \
@@ -69,7 +69,7 @@ class TaxDb(object):
 'Archaeoglobus fulgidus', \
 'Archaeoglobus fulgidus DSM 4304']
 
-        >>> TaxIdDb.get_lineage_from_db('2')
+        >>> TaxDb.get_lineage_from_db('2')
         ['cellular organisms', 'Bacteria']
 
         >> TaxIdDb.get_lineage_from_db('2759')
