@@ -7,44 +7,12 @@ __maintainer__  = "Mateusz Korycinski"
 __email__       = "mkorycinski@protonmail.ch"
 __status__      = "Testing"
 
+# External imports
 import pymongo
 
-class Node(object):
-    """Describes Node object that is stored in the database as a document.
-    Each node points to a parent node, unless tax_id = 0.
-
-    """
-
-    def __init__(self, taxid, scientific_name, upper_hierarchy, node_type=None):
-        self.taxid = taxid
-        self.scientific_name = scientific_name
-        self.upper_hierarchy = upper_hierarchy
-        self.node_type = node_type
-
-    def post_format(self):
-        return {'TaxID': self.taxid,
-                'Parent': self.upper_hierarchy,
-                'SciName': self.scientific_name}
-
-
-class NoConnection(Exception):
-    """Exception that is raised by each method that requires connection
-    to the database
-
-    e.g.:
-    >>> raise NoConnection
-    Traceback (most recent call last):
-      File "/usr/lib/python2.7/doctest.py", line 1315, in __run
-        compileflags, 1) in test.globs
-      File "<doctest __main__.NoConnection[0]>", line 1, in <module>
-        raise NoConnection
-    NoConnection: 'No connection to the database! Exiting.'
-
-    """
-
-    def __str__(self):
-        return repr("No connection to the database! Exiting.")
-
+# Internal imports
+from OwnExceptions import NoConnection
+from OwnObjects import Node
 
 class TaxDb(object):
     """Class containing methods to handle users requests for translating
@@ -54,21 +22,29 @@ class TaxDb(object):
 
     # Database connection parameters.
     HOSTNAME = 'localhost'
-    PORT = '27017'
+    PORT = 27017
+    NAME = 'TaxIDMapper'
     STATUS = False
 
     def connect(self):
         """Connects to the database"""
 
-        self.db_client = pymongo.MongoClient(self.HOSTNAME,
-                                             self.PORT)
+        self.db_client = pymongo.MongoClient(self.HOSTNAME, self.PORT)
 
-        database = self.db_client['TaxIDMapper']
+        database = self.db_client[self.NAME]
         self.db_nodes = database.nodes
         self.db_links = database.links
         self.STATUS = True
         print('Connection to the database established')
-
+    
+    # def setup_new_db(self):
+    #     """Setup new empty database with required collections."""
+    #
+    #     db_client = pymongo.MongoClient(self.HOSTNAME, self.PORT)
+    #
+    #     database = db_client[self.NAME]
+        
+    
     def disconnect(self):
         """Closes connection to the database"""
 
