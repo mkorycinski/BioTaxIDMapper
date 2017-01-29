@@ -55,7 +55,7 @@ class TaxDb(object):
 
         database = self.db_client['TaxIDMapper']
         self.db_nodes = database.nodes
-        self.db_names = database.names
+        self.db_links = database.links
         self.STATUS = True
         print('Connection to the database established')
 
@@ -94,24 +94,38 @@ class TaxDb(object):
 
         self.check_connection()
 
-        self.db_nodes.find_one(node.post_format())
+        record = self.db_nodes.find_one(node.post_format())
 
-    def organism_to_taxid(self, organism_name):
-        """Method retrieves taxonomy ID for a query organism name.
+        if record:
+            return True
+        else:
+            return False
+
+    def get_record_taxid(self, taxid):
+        """Retrieves record from the database by taxid.
 
         Params:
-            organism_name (str): Binominal name of a query organism_name
+            taxid (str): query Taxonomy ID
 
         Returns:
-            taxid (str): Taxonomy ID for a query organism
-
-        e.g.:
-        >>> TaxDb.organism_to_taxid('Archaeoglobus fulgidus DSM 4304')
-        '224325'
+            node (Node): Node object
 
         """
 
-        pass
+        self.check_connection()
+
+        record = self.db_nodes.find_one({'TaxID':taxid})
+        node = Node(taxid=record['TaxID'],
+                    scientific_name=record['SciName'],
+                    upper_hierarchy=record['Parent'])
+
+        return node
+
+    def protein_taxid(self, protein_id):
+        """Translates protein id to taxonomy id"""
+
+        record = self.db_links.find_one({'ProteinID':protein_id})
+        return record['TaxID']
 
     def get_lineage_from_db(self, tax_id):
         """Method retrieves phylogenetic lineage from database based on
