@@ -27,7 +27,7 @@ class TaxDb(object):
 
     """
 
-    self.database_path = "/dbs/TaxID.mongodb"
+    database_path = '/dbs/TaxID.mongodb'
 
     def connect(self):
         """Opens connection to the database"""
