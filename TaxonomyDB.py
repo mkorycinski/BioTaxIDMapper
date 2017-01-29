@@ -7,6 +7,7 @@ __maintainer__  = "Mateusz Korycinski"
 __email__       = "mkorycinski@protonmail.ch"
 __status__      = "Testing"
 
+import pymongo
 
 class Node(object):
     """Describes Node object that is stored in the database as a document.
@@ -20,6 +21,20 @@ class Node(object):
         self.upper_hierarchy = upper_hierarchy
         self.node_type = node_type
 
+    def post_format(self):
+        return {'TaxID': self.taxid,
+                'Parent': self.upper_hierarchy,
+                'SciName': self.scientific_name}
+
+
+class NoConnection(Exception):
+    """Exception that is raised by each method that requires connection
+    to the database
+    """
+
+    def __str__(self):
+        return repr("No connection to the database! Exiting.")
+
 
 class TaxDb(object):
     """Class containing methods to handle users requests for translating
@@ -27,31 +42,59 @@ class TaxDb(object):
 
     """
 
-    database_path = '/dbs/TaxID.mongodb'
+    # Database connection parameters.
+    HOSTNAME = 'localhost'
+    PORT = '27017'
+    STATUS = False
 
     def connect(self):
-        """Opens connection to the database"""
+        """Connects to the database"""
 
-        pass
+        self.db_client = pymongo.MongoClient(self.HOSTNAME,
+                                             self.PORT)
+
+        database = self.db_client['TaxIDMapper']
+        self.db_nodes = database.nodes
+        self.db_names = database.names
+        self.STATUS = True
+        print('Connection to the database established')
 
     def disconnect(self):
         """Closes connection to the database"""
 
-        pass
+        self.db_client.close()
 
-    def add_record(self, node: Node):
+    def check_connection(self):
+        """Checks whether connection to the database has been established.
+        If not - raises No Connection exception.
+        """
+
+        if not self.STATUS:
+            raise NoConnection
+
+
+    def add_record(self, node):
         """Method updates database with a new entry.
 
         Params:
-            protein_acc (str): Protein accession Identifier
-            tax_id (str): Taxonomy Identifier
+            node (Node): TaxDB node object
 
         Returns:
-            Nothing
+            result (ObjectId): Unique ID of a newly added record.
 
         """
+        self.check_connection()
 
-        pass
+        record_id = self.db_nodes.insert_one(node.post_format())
+
+        return record_id
+
+    def record_exists(self, node):
+        """Method checks whether the document already exists in the database"""
+
+        self.check_connection()
+
+        self.db_nodes.find_one(node.post_format())
 
     def organism_to_taxid(self, organism_name):
         """Method retrieves taxonomy ID for a query organism name.
@@ -102,7 +145,3 @@ class TaxDb(object):
 
         pass
 
-    def document_exists(self, node: Node):
-        """Method checks whether the document already exists in the database"""
-
-        pass
