@@ -21,7 +21,8 @@ from os import sys
 
 # Internal modules import
 import NCBITaxonomies as ncbi
-from TaxonomyDB import TaxDb, Node
+from TaxonomyDB import TaxDb
+from OwnObjects import Node
 
 # Directory where all files from NCBI have been downloaded and extracted
 ncbi_download = sys.argv[1]
@@ -29,7 +30,7 @@ ncbi_download = sys.argv[1]
 # Paths to all required files.
 names_file = '%s/names.dmp' % ncbi_download
 nodes_file = '%s/nodes.dmp' % ncbi_download
-links_file = '%s/protein_taxonomy.dmp' % ncbi_download
+links_file = '%s/protein_taxonomy.lnk' % ncbi_download
 
 names = ncbi.read_name_dump(names_file)
 nodes = ncbi.read_node_dumps(nodes_file)
