@@ -64,6 +64,7 @@ class TaxDb(object):
 
         self.db_client.close()
 
+    @autoreconnect_retry
     def add_record(self, node):
         """Method updates database with a new entry.
 
