@@ -1,33 +1,28 @@
 """Handling connection with a local Taxonomy Database."""
 
-__author__ = "Mateusz Korycinski"
-__license__ = "GPL"
-__version__ = "1.0"
-__maintainer__ = "Mateusz Korycinski"
-__email__ = "mkorycinski@protonmail.ch"
-__status__ = "Testing"
-
-# MongoDB API stuff
+import doctest
 import pymongo
 from pymongo.errors import AutoReconnect
 
-# Internal imports
-from OwnExceptions import NoConnection, NoProteinLink, NoRecord
-from OwnObjects import Node, ProteinLink
+from OwnExceptions import NoProteinLink, NoRecord
+from OwnObjects import Node
 
 # MongoDB connection test for methods requiring database access
-def autoreconnect_retry(fn, retries=5):
+def autoreconnect_retry(func, retries=3):
+    """Decorating checking connection to the database."""
     def db_op_wrapper(*args, **kwargs):
+        """Decorator wrapper"""
         tries = 0
 
         while tries < retries:
             try:
-                return fn(*args, **kwargs)
+                return func(*args, **kwargs)
 
             except AutoReconnect:
                 tries += 1
 
-        raise Exception("No luck even after %d retries" % retries)
+        raise Exception(
+            "Couldn't connect to the database, even after %d retries" % retries)
     return db_op_wrapper
 
 class TaxDb(object):
@@ -41,7 +36,7 @@ class TaxDb(object):
     PORT = 27017
     NAME = 'TaxIDMapper'
 
-    def connect(self):
+    def __init__(self):
         """Connects to the database"""
 
         self.db_client = pymongo.MongoClient(self.HOSTNAME, self.PORT)
@@ -49,21 +44,13 @@ class TaxDb(object):
         database = self.db_client[self.NAME]
         self.db_nodes = database.nodes
         self.db_links = database.links
-        print('Connection to the database established')
-
-    # def setup_new_db(self):
-    #     """Setup new empty database with required collections."""
-    #
-    #     db_client = pymongo.MongoClient(self.HOSTNAME, self.PORT)
-    #
-    #     database = db_client[self.NAME]
-
 
     def disconnect(self):
         """Closes connection to the database"""
 
         self.db_client.close()
 
+    @autoreconnect_retry
     def add_record(self, node):
         """Method updates database with a new entry.
 
@@ -78,7 +65,7 @@ class TaxDb(object):
         record_id = self.db_nodes.insert_one(node.post_format())
 
         return record_id
-    
+
     @autoreconnect_retry
     def record_exists(self, node):
         """Method checks whether the document already exists in the database"""
@@ -86,10 +73,7 @@ class TaxDb(object):
 
         record = self.db_nodes.find_one(node.post_format())
 
-        if record:
-            return True
-        else:
-            return False
+        return bool(record)
 
     @autoreconnect_retry
     def get_node(self, taxid):
@@ -193,5 +177,4 @@ class TaxDb(object):
         return lineage
 
 if __name__ == "__main__":
-    import doctest
     doctest.testmod()
