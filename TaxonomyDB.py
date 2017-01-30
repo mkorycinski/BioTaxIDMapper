@@ -1,20 +1,19 @@
 """Handling connection with a local Taxonomy Database."""
 
-__author__      = "Mateusz Korycinski"
-__license__     = "GPL"
-__version__     = "1.0"
-__maintainer__  = "Mateusz Korycinski"
-__email__       = "mkorycinski@protonmail.ch"
-__status__      = "Testing"
+__author__ = "Mateusz Korycinski"
+__license__ = "GPL"
+__version__ = "1.0"
+__maintainer__ = "Mateusz Korycinski"
+__email__ = "mkorycinski@protonmail.ch"
+__status__ = "Testing"
 
 # MongoDB API stuff
 import pymongo
 from pymongo.errors import AutoReconnect
 
 # Internal imports
-from OwnExceptions import *
-from OwnObjects import Node
-
+from OwnExceptions import NoConnection, NoProteinLink, NoRecord
+from OwnObjects import Node, ProteinLink
 
 # MongoDB connection test for methods requiring database access
 def autoreconnect_retry(fn, retries=5):
@@ -29,6 +28,7 @@ def autoreconnect_retry(fn, retries=5):
                 tries += 1
 
         raise Exception("No luck even after %d retries" % retries)
+    return db_op_wrapper
 
 class TaxDb(object):
     """Class containing methods to handle users requests for translating
@@ -64,7 +64,6 @@ class TaxDb(object):
 
         self.db_client.close()
 
-    @autoreconnect_retry
     def add_record(self, node):
         """Method updates database with a new entry.
 
@@ -79,7 +78,7 @@ class TaxDb(object):
         record_id = self.db_nodes.insert_one(node.post_format())
 
         return record_id
-
+    
     @autoreconnect_retry
     def record_exists(self, node):
         """Method checks whether the document already exists in the database"""
