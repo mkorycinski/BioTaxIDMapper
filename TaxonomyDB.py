@@ -11,7 +11,7 @@ __status__      = "Testing"
 import pymongo
 
 # Internal imports
-from OwnExceptions import NoConnection
+from OwnExceptions import *
 from OwnObjects import Node
 
 class TaxDb(object):
@@ -87,33 +87,57 @@ class TaxDb(object):
         else:
             return False
 
-    def get_record_taxid(self, taxid):
-        """Retrieves record from the database by taxid.
-
+    def get_node(self, taxid):
+        """Returns node record from database.
+        
         Params:
-            taxid (str): query Taxonomy ID
-
+            taxid (str): Taxonomy ID
+            
         Returns:
-            node (Node): Node object
-
+            record (Node): Node record
         """
-
-        self.check_connection()
-
-        record = self.db_nodes.find_one({'TaxID':taxid})
-        node = Node(taxid=record['TaxID'],
-                    scientific_name=record['SciName'],
-                    upper_hierarchy=record['Parent'])
-
-        return node
+        
+        result = self.db_nodes.find_one({'TaxID': taxid})
+        
+        record = Node(taxid=result['TaxID'],
+                      scientific_name=result['SciName'],
+                      upper_hierarchy=result['Parent'])
+        
+        if not record:
+            raise NoRecord(taxid)
+        
+        return record
+    
+    def search_scientific_name(self, sci_name):
+        """Search Database with scientific name
+        
+        Params:
+            sci_name (str): Scientific name of an organism or phylum to search
+            
+        Returns:
+            record (Node): Node record from the database
+        
+        """
+        
+        result = self.db_nodes.find_one({'SciName': sci_name})
+        
+        record = Node(taxid=result['TaxID'],
+                      scientific_name=result['SciName'],
+                      upper_hierarchy=result['Parent'])
+        
+        return record
 
     def protein_taxid(self, protein_id):
         """Translates protein id to taxonomy id"""
 
         record = self.db_links.find_one({'ProteinID':protein_id})
+        
+        if not record:
+            raise NoProteinLink(protein_acc=protein_id)
+        
         return record['TaxID']
 
-    def get_lineage_from_db(self, tax_id):
+    def get_lineage_from_db(self, taxid, lineage=None):
         """Method retrieves phylogenetic lineage from database based on
         accession.
 
@@ -142,8 +166,23 @@ class TaxDb(object):
         ['cellular organisms', 'Eukaryota']
 
         """
-
-        pass
+        
+        # If it is the first call
+        if not lineage:
+            lineage = []
+            
+        curr_taxid = self.get_node(taxid=taxid)
+        
+        # Check whether it is not the highest hierarchy possible
+        if curr_taxid.taxid != curr_taxid.upper_hierarchy:
+            # if there is higher hierarchy, append and travel up the tree
+            lineage.append(curr_taxid.scientific_name)
+            return(self.get_lineage_from_db(taxid=curr_taxid.upper_hierarchy,
+                                            lineage=lineage))
+        
+        lineage.append(curr_taxid.scientific_name)
+        lineage.reverse()
+        return lineage
 
 if __name__ == "__main__":
     import doctest

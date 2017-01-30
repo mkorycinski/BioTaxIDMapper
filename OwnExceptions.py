@@ -1,22 +1,35 @@
 """Module containing non-standard exceptions"""
 
 class NoConnection(Exception):
-    """Exception that is raised by each method that requires connection
-    to the database
-
-    e.g.:
-    >>> raise NoConnection
-    Traceback (most recent call last):
-      File "/usr/lib/python2.7/doctest.py", line 1315, in __run
-        compileflags, 1) in test.globs
-      File "<doctest __main__.NoConnection[0]>", line 1, in <module>
-        raise NoConnection
-    NoConnection: 'No connection to the database! Exiting.'
-
+    """Exception that is raised if a method requires database connection, but
+    connection is not established.
     """
     
     def __str__(self):
         return repr("No connection to the database! Exiting.")
+    
+    
+class NoProteinLink(Exception):
+    """Exception raised when link between protein accession and taxid does
+    not exist.
+    """
+    def __init__(self, protein_acc):
+        self.protein_acc = protein_acc
+        
+    def __str__(self):
+        return repr("No link for %s found." % self.protein_acc)
+    
+    
+class NoRecord(Exception):
+    """Exception raised when record cannot be found in the database."""
+    
+    def __init__(self, identifier):
+        self.identifier = identifier
+        
+    def __str__(self):
+        return repr('%s record doesn\'t exist in the database.'
+                     % self.identifier)
+    
     
 if __name__ == "__main__":
     import doctest
