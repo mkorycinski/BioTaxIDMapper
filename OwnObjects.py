@@ -40,6 +40,37 @@ class Node(object):
                 'Parent': self.upper_hierarchy,
                 'SciName': self.scientific_name}
     
+class ProteinLink(object):
+    """Describes Protein link object that is stored in database's links
+    collection."""
+    
+    def __init__(self, protein_id, taxid):
+        self.protein_id = protein_id
+        self.taxid = taxid
+        
+    def post_format(self):
+        """Formats object into post format required by MongoDB.
+
+        Params:
+            None
+
+        Returns:
+            Dictionary representation of an object.
+
+        e,g,:
+        >>> p_link = ProteinLink(protein_id='WP123.1', taxid='224325')
+        >>> nd = node.post_format()
+        >>> nd['TaxID']
+        '224325'
+
+        >>> nd['ProteinID']
+        'WP123.1'
+
+        """
+        
+        return {'ProteinID':self.protein_id,
+                'TaxID': self.taxid}
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
