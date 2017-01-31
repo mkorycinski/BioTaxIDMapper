@@ -66,7 +66,7 @@ def read_node_dumps(file_path):
     >>> test_case = {'2': '131567', '6': '335928', '7': '6', '9':'32199'}
     >>> shared_items = set(nodes.items()) & set(test_case.items())
     >>> test_case['2']
-    131567
+    '131567'
 
     """
 
@@ -99,9 +99,12 @@ def read_protein_taxid_links(file_path):
         links (dict): Dictionary with {protein_id: taxid}
 
     e.g.:
-    >>> links = read_protein_taxid_links('tmp/test_prot_links.txt')
-    >>> links['WP123.1']
-    224325
+    >>> links = read_protein_taxid_links('tmp/prot.accession2taxid_test')
+    >>> links['P06912']
+    '9986'
+
+    >>> links['P18902']
+    '9913'
 
     """
 
@@ -109,11 +112,13 @@ def read_protein_taxid_links(file_path):
 
     with open(file_path, 'r') as in_file:
         for link in in_file:
-            link = link.strip().split(',')
-            protein_id = link[0]
-            taxid = link[1]
-            links[protein_id] = taxid
+            if link.startswith('accession'):
+                continue
 
+            link = link.split()
+            protein_acc = link[0]
+            taxid = link[2]
+            links[protein_acc] = taxid
     return links
 
 if __name__ == "__main__":
