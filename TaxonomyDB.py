@@ -7,6 +7,7 @@ from pymongo.errors import AutoReconnect
 from OwnExceptions import NoProteinLink, NoRecord
 from OwnObjects import Node
 
+
 # MongoDB connection test for methods requiring database access
 def autoreconnect_retry(func, retries=3):
     """Decorating checking connection to the database."""
@@ -62,18 +63,26 @@ class TaxDb(object):
 
         """
 
-        record_id = self.db_nodes.insert_one(node.post_format())
-
-        return record_id
+        try:
+            self.db_nodes.insert_one(node.post_format())
+        except pymongo.errors.DuplicateKeyError:
+            print('%s already exists. Record not inserted.' % node.taxid)
 
     @autoreconnect_retry
-    def record_exists(self, node):
-        """Method checks whether the document already exists in the database"""
+    def add_protein_link(self, protein_link):
+        """Method updates database with a new protein link.
+        Params:
+            protein_link (ProteinLink): ProteinLink object
 
+        Returns:
+            result (ObjectID): Unique ID of a newly added link
+        """
 
-        record = self.db_nodes.find_one(node.post_format())
-
-        return bool(record)
+        try:
+            self.db_links.insert_one(protein_link.post_format())
+        except pymongo.errors.DuplicateKeyError:
+            print('%s already exists, link not inserted.'
+                  % protein_link.protein_id)
 
     @autoreconnect_retry
     def get_node(self, taxid):
@@ -88,12 +97,12 @@ class TaxDb(object):
 
         result = self.db_nodes.find_one({'TaxID': taxid})
 
+        if not result:
+            raise NoRecord(taxid)
+
         record = Node(taxid=result['TaxID'],
                       scientific_name=result['SciName'],
                       upper_hierarchy=result['Parent'])
-
-        if not record:
-            raise NoRecord(taxid)
 
         return record
 
@@ -110,6 +119,9 @@ class TaxDb(object):
         """
 
         result = self.db_nodes.find_one({'SciName': sci_name})
+
+        if not result:
+            raise NoRecord(sci_name)
 
         record = Node(taxid=result['TaxID'],
                       scientific_name=result['SciName'],
@@ -128,7 +140,6 @@ class TaxDb(object):
 
         return record['TaxID']
 
-    @autoreconnect_retry
     def get_lineage_from_db(self, taxid, lineage=None):
         """Method retrieves phylogenetic lineage from database based on
         accession.
@@ -138,25 +149,6 @@ class TaxDb(object):
 
         Returns:
             lineage (str): Lineage of an organism represented by tax identifier.
-
-        e.g.:
-        >>> TaxDb.get_lineage_from_db('224325')
-        ['cellular organisms', \
-'Archaea', \
-'Euryarchaeota', \
-'Archaeoglobi', \
-'Archaeoglobales', \
-'Archaeoglobaceae', \
-'Archaeoglobus', \
-'Archaeoglobus fulgidus', \
-'Archaeoglobus fulgidus DSM 4304']
-
-        >>> TaxDb.get_lineage_from_db('2')
-        ['cellular organisms', 'Bacteria']
-
-        >> TaxIdDb.get_lineage_from_db('2759')
-        ['cellular organisms', 'Eukaryota']
-
         """
 
         # If it is the first call
@@ -169,8 +161,10 @@ class TaxDb(object):
         if curr_taxid.taxid != curr_taxid.upper_hierarchy:
             # if there is higher hierarchy, append and travel up the tree
             lineage.append(curr_taxid.scientific_name)
-            return(self.get_lineage_from_db(taxid=curr_taxid.upper_hierarchy,
-                                            lineage=lineage))
+            try:
+                return TaxDb.get_lineage_from_db(self, curr_taxid.upper_hierarchy, lineage)
+            except NoRecord:
+                pass
 
         lineage.append(curr_taxid.scientific_name)
         lineage.reverse()

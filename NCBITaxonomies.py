@@ -1,24 +1,6 @@
 """NCBI Taxonomies read NCBI's taxonomy dumps"""
 
-__author__      = "Mateusz Korycinski"
-__license__     = "GPL"
-__version__     = "1.0"
-__maintainer__  = "Mateusz Korycinski"
-__email__       = "mkorycinski@protonmail.ch"
-__status__      = "Testing"
-
-
-from collections import OrderedDict
-
-class DoubleRelies(Exception):
-    def __init__(self, taxid, parent_taxid):
-        self.taxid = taxid
-        self.parent_taxid = parent_taxid
-
-    def __str__(self):
-        return repr("Double rely in the database for pair %s:%s"
-                    % (self.taxid, self.parent_taxid))
-
+from OwnExceptions import DoubleRelies
 
 def read_name_dump(file_path):
     """Reads names from a dump file.
@@ -43,11 +25,10 @@ def read_name_dump(file_path):
             node = node.split('\t|\t')
             taxid = node[0]
             name = node[1]
+            status = node[3].split('\t|')[0].strip()
 
-            if taxid not in names:
-                names[taxid] = []
-
-            names[taxid].append(name)
+            if taxid not in names and status == 'scientific name':
+                names[taxid] = name
 
     return names
 

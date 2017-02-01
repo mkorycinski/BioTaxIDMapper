@@ -22,36 +22,68 @@ from os import sys
 # Internal modules import
 import NCBITaxonomies as ncbi
 from TaxonomyDB import TaxDb
-from OwnObjects import Node
+from OwnObjects import Node, ProteinLink
 
 # Directory where all files from NCBI have been downloaded and extracted
 ncbi_download = sys.argv[1]
 
-# Paths to all required files.
-names_file = '%s/names.dmp' % ncbi_download
-nodes_file = '%s/nodes.dmp' % ncbi_download
-links_file = '%s/protein_taxonomy.lnk' % ncbi_download
+def update_nodes():
+    """Updates nodes collection of the database."""
 
-names = ncbi.read_name_dump(names_file)
-nodes = ncbi.read_node_dumps(nodes_file)
-links = ncbi.read_protein_taxid_links(links_file)
+    # Paths to all required files.
+    print('Reading nodes...')
+    names_file = '%s/names.dmp' % ncbi_download
+    nodes_file = '%s/nodes.dmp' % ncbi_download
 
-# Initialize connection with a database
-database = TaxDb()
-database.connect()
+    print('Updating nodes collection in the database...')
+    names = ncbi.read_name_dump(names_file)
+    nodes = ncbi.read_node_dumps(nodes_file)
 
-# Go through NCBI taxonomy dump records
-for taxid, parent_taxid in nodes.iteritems():
 
-    # If given taxid record does not exist
-    # in a local database, create Node object
-    # and create document in a database
-    if not database.document_exists():
+    # Initialize connection with a database
+    database = TaxDb()
+
+    # Go through NCBI taxonomy dump records, update if record
+    # doesn't exist
+    for taxid, parent_taxid in nodes.iteritems():
+
+        # If given taxid record does not exist
+        # in a local database, create Node object
+        # and create document in a database
         new_node = Node(taxid=taxid,
                         scientific_name=names[taxid],
                         upper_hierarchy=parent_taxid,)
 
         database.add_record(node=new_node)
 
-# Always disconnect the database!
-database.disconnect()
+    # Always disconnect the database!
+    database.disconnect()
+
+    print('Done!')
+
+def update_links():
+    """Updates links collection of the database."""
+
+    print('Reading links...')
+    links_file = '%s/prot.accession2taxid' % ncbi_download
+    links = ncbi.read_protein_taxid_links(links_file)
+
+    print('Updating links collection...')
+    database = TaxDb()
+
+    # Go thorugh NCBI protein ACC - taxid mappings, update if record
+    # doesn't exist
+    for protein_acc, taxid in links.iteritems():
+        new_link = ProteinLink(protein_id=protein_acc,
+                               taxid=taxid)
+
+        database.add_protein_link(new_link)
+
+    # Always disconnect the database!
+    database.disconnect()
+
+    print('Done!')
+
+if __name__ == "__main__":
+    update_links()
+    update_nodes()
