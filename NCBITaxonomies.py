@@ -43,11 +43,10 @@ def read_name_dump(file_path):
             node = node.split('\t|\t')
             taxid = node[0]
             name = node[1]
+            status = node[3]
 
-            if taxid not in names:
-                names[taxid] = []
-
-            names[taxid].append(name)
+            if taxid not in names and status == 'scientific name':
+                names[taxid] = name
 
     return names
 
