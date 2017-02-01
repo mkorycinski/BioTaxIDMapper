@@ -8,8 +8,8 @@ but prepared directly in the mongo shell with pseudo-data."""
 import unittest
 import pymongo
 
-from TaxonomyDB import TaxDb
-from OwnObjects import Node, ProteinLink
+from BioTaxIDMapper.TaxonomyDB import TaxDb
+from BioTaxIDMapper.OwnObjects import Node, ProteinLink
 
 TaxDb.NAME = 'TaxIDMapper_test'
 database = TaxDb()
@@ -34,6 +34,9 @@ class TestTaxDb(unittest.TestCase):
                     'SciName':'Test_node_11_parent_22',
                     'Parent':'22'}
 
-        db.delete_one({'TaxID':'11'})
+        # db.delete_one({'TaxID':'11'})
 
         self.assertEqual(result, expected)
+
+if __name__ == '__main__':
+    unittest.main()
