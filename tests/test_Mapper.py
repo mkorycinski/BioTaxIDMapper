@@ -1,7 +1,7 @@
 """Unit tests for Mapper wrapper."""
 
 import unittest
-from BioTaxIDMapper.Mapper import version_to_accession, read_protein_acc
+from ..Mapper import version_to_accession, read_protein_acc
 
 
 class TestMapper(unittest.TestCase):

@@ -84,22 +84,6 @@ class TaxDb(object):
             print('%s already exists, link not inserted.'
                   % protein_link.protein_id)
 
-    # @autoreconnect_retry
-    # def record_exists(self, node):
-    #     """Method checks whether record already exists in the database"""
-    #
-    #     record = self.db_nodes.find_one(node.post_format())
-    #
-    #     return bool(record)
-    #
-    # @autoreconnect_retry
-    # def link_exists(self, protein_link):
-    #     """Method checks whether record already exists in the database"""
-    #
-    #     record = self.db_links.find_one(protein_link.post_format())
-    #
-    #     return bool(record)
-
     @autoreconnect_retry
     def get_node(self, taxid):
         """Returns node record from database.
@@ -165,25 +149,6 @@ class TaxDb(object):
 
         Returns:
             lineage (str): Lineage of an organism represented by tax identifier.
-
-        e.g.:
-        >>> TaxDb.get_lineage_from_db('224325')
-        ['cellular organisms', \
-'Archaea', \
-'Euryarchaeota', \
-'Archaeoglobi', \
-'Archaeoglobales', \
-'Archaeoglobaceae', \
-'Archaeoglobus', \
-'Archaeoglobus fulgidus', \
-'Archaeoglobus fulgidus DSM 4304']
-
-        >>> TaxDb.get_lineage_from_db('2')
-        ['cellular organisms', 'Bacteria']
-
-        >> TaxIdDb.get_lineage_from_db('2759')
-        ['cellular organisms', 'Eukaryota']
-
         """
 
         # If it is the first call
