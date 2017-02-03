@@ -3,7 +3,7 @@
 from os import sys
 import argparse
 
-from TaxonomyDB import TaxDb
+from taxonomydb import TaxDb
 
 usage = """Biological Taxonomies ID Mapper.
 This simple tool allows to map NCBI taxonomy database information onto files
