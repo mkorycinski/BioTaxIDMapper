@@ -25,11 +25,11 @@ __status__      = "Testing"
 # Global imports
 
 # Local imports
-from TaxonomyDB import TaxDb
+from taxonomydb import TaxDb
 
 def main():
     pass
 
-    
+
 if __name__ == "__main__":
     main()
