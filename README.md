@@ -2,6 +2,7 @@
 BioTaxIDMapper is a simple tool for mapping taxonomy information onto files containing FASTA-like headers. It keeps local database containing links between protein accessions and taxonomy identifiers, as well as whole taxonomic lineages. Scripts provided together with the tool allows to constantly update local database using NCBI taxonomy dumps and link file containing taxid mapping onto protein IDs / accessions.
 
 **Requirements**
+
 Beside standard libraries BioTaxIDMapper requires **pymongo** ver. 3.4.0 or higher. It can be installed with [pip](https://pypi.python.org/pypi/pip):
 ```
 pip install pymongo
@@ -19,6 +20,7 @@ NAME=TaxIDMapper
 You don't need to create specific databases and collections, it will be done autmatically when first records will be added. However keep in mind that if you alredy have a database with name as specified in the configuration file, records will be added to already existing one. In such case it might be a smart move to change name in the config file.
 
 **Data I/O Speedup**
+
 In order to increase the speed with which records are added and / or retrieved, as well as to ommit having duplicated documents, I highly recommend creating unique Indexes for fields **'TaxID'** in the **'nodes'** collection, and **'ProteinID'** in the **'links'** collection. It can be achieved in MongoDB shell by executing:
 ```
 > use TaxIDMapper
@@ -40,7 +42,7 @@ Where **[PATH_TO_NCBI_DIR]** is a path where all required dump files are stored:
 
 If your database is empty all records will be added at the first run. Keep in mind that if you didn't create indexes in the database collections you will encounter duplicate records. To avoid this either create Indexes (described above, speeds up interaction with the database) or update database only with new nodes and protein accession - taxid links (e.g. by diff between old and new files.)
 
-## Mapping lineages onto a files
+## Mapping lineages onto files
 To map Lineages you can either use **Mapper** script or use module interactively. To learn how to use mapper script simply run it with **-h** parameter:
 ```
 ./mapper.py -h
@@ -69,7 +71,13 @@ Docstrings will explain you how to use each of the methods. It is important to n
 >>> version_to_accession('WP_12323.34')
 'WP_12323'
 ```
-
+## Contact
 If you have any questions or suggestions regarding this tool or README file itself, feel free to contact me:
   - **E-mail:** mat . korycinski [at] gmail.com
   - **Twitter:** @mkorycinski
+  
+## Acknowledgments
+  - Vikram Alva
+  - Andrew Stephens
+  - David Rau
+  - Lukas Zimmermann
