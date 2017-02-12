@@ -2,6 +2,7 @@
 
 import doctest
 import pymongo
+import os
 from pymongo.errors import AutoReconnect
 
 from own_exceptions import NoProteinLink, NoRecord
@@ -32,20 +33,50 @@ class TaxDb(object):
 
     """
 
-    # Database connection parameters.
-    HOSTNAME = 'localhost'
-    PORT = 27017
-    NAME = 'TaxIDMapper'
-
     def __init__(self):
         """Connects to the database"""
-
+        
+        # Read database configuration from file
+        cfg = self.read_db_cfg()
+        
+        # Parse database configuration
+        self.HOSTNAME = cfg['HOSTNAME']
+        self.PORT = int(cfg['PORT'])
+        self.NAME = cfg['NAME']
+        
+        
         self.db_client = pymongo.MongoClient(self.HOSTNAME, self.PORT)
 
         database = self.db_client[self.NAME]
         self.db_nodes = database.nodes
         self.db_links = database.links
+    
+    @staticmethod
+    def read_db_cfg():
+        """Reads database configuration from file."""
+        
+        cfg = {}
+        
+        # Get absolute path to a config file
+        cfg_file = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                   'db.cfg'))
+        
+        with open(cfg_file, 'r') as ifile:
+            for line in ifile:
+                if line.startswith('#'):
+                    continue
 
+                key, val = line.strip().split('=')
+                
+                # Check whether any parameters have double values.
+                if key not in cfg:
+                    cfg[key] = val
+                else:
+                    print('Dubled values for one keyword! Check your '
+                          'config file before running software!')
+                    return False
+        return cfg
+    
     def disconnect(self):
         """Closes connection to the database"""
 
