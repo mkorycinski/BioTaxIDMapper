@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 """Wrapper for the BioTaxIDMapper package."""
 
 from os import sys
@@ -12,6 +13,9 @@ defline between '#|' and '|#' delimiters. Each node is separated with '<->'.
 
 e.g.:
     > (...) #|cellular organisms <-> Bacteria |#
+    
+To run simply type:
+./mapper.py -i [IN_FILE] -o [OUT_FILE]
 """
 
 def parse_arguments(argv):
@@ -97,7 +101,8 @@ def map_taxonomies(in_file, out_file):
             # If it is not defline - write to putput as it is
             if not line.startswith('>'):
                 out_file.write(line)
-
+                continue
+            
             # Retrieve data from the database
             protein_acc = read_protein_acc(line[1:])
             taxid = database.protein_taxid(protein_acc)
@@ -116,5 +121,5 @@ def map_taxonomies(in_file, out_file):
     database.disconnect()
 
 if __name__ == '__main__':
-    args = parse_arguments(sys.argv)
+    args = parse_arguments(sys.argv[1:])
     map_taxonomies(args.input_file, args.output_file)
