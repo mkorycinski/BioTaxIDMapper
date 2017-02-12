@@ -5,6 +5,7 @@ from os import sys
 import argparse
 
 from taxonomydb import TaxDb
+from own_exceptions import  NoRecord, NoProteinLink
 
 usage = """Biological Taxonomies ID Mapper.
 This simple tool allows to map NCBI taxonomy database information onto files
@@ -13,7 +14,7 @@ defline between '#|' and '|#' delimiters. Each node is separated with '<->'.
 
 e.g.:
     > (...) #|cellular organisms <-> Bacteria |#
-    
+
 To run simply type:
 ./mapper.py -i [IN_FILE] -o [OUT_FILE]
 """
@@ -93,20 +94,27 @@ def map_taxonomies(in_file, out_file):
     database = TaxDb()
 
     # Open input and output files for reading / writing
-    with open(args.input_file, 'r') as in_file, \
-        open(args.output_file, 'w') as out_file:
-
+    with open(in_file, 'r') as ifile, open(out_file, 'w') as ofile:
         # Iterate in line per line fashion
-        for line in in_file:
+        for line in ifile:
             # If it is not defline - write to putput as it is
             if not line.startswith('>'):
-                out_file.write(line)
+                ofile.write(line)
                 continue
-            
+
             # Retrieve data from the database
             protein_acc = read_protein_acc(line[1:])
-            taxid = database.protein_taxid(protein_acc)
-            lineage = database.get_lineage_from_db(taxid)
+
+            # Catch exceptions notifying about non-existing entries in
+            # the database. In such case there should be no mapping
+            # and defline should be written to output as it is
+            try:
+                taxid = database.protein_taxid(protein_acc)
+                lineage = database.get_lineage_from_db(taxid)
+
+            except (NoRecord, NoProteinLink) as e:
+                ofile.write(line)
+                continue
 
             # Create lineage string in a human-readable way
             lineage = "<->".join(lineage)
@@ -115,7 +123,7 @@ def map_taxonomies(in_file, out_file):
             new_defline = '%s #| %s |#\n' % (line.strip(),
                                              lineage)
             # Write to output
-            out_file.write(new_defline)
+            ofile.write(new_defline)
 
     # Just in case - disconnect from the database
     database.disconnect()

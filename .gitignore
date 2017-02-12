@@ -4,3 +4,4 @@ TaxIDMapper_old.py
 .idea
 TaxIDMapper.py
 .idea
+*.pyc

@@ -62,24 +62,16 @@ def update_nodes():
     print('Done!')
 
 def update_links():
-    """Updates links collection of the database."""
+    """Light version of update links method"""
 
-    print('Reading links...')
+    print('Reading links and updating local database...')
     links_file = '%s/prot.accession2taxid' % ncbi_download
-    links = ncbi.read_protein_taxid_links(links_file)
 
-    print('Updating links collection...')
     database = TaxDb()
 
-    # Go thorugh NCBI protein ACC - taxid mappings, update if record
-    # doesn't exist
-    for protein_acc, taxid in links.iteritems():
-        new_link = ProteinLink(protein_id=protein_acc,
-                               taxid=taxid)
+    for link in ncbi.protein_taxid_links(file_path=links_file):
+        database.add_protein_link(link)
 
-        database.add_protein_link(new_link)
-
-    # Always disconnect the database!
     database.disconnect()
 
     print('Done!')

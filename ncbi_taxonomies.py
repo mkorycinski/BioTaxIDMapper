@@ -1,6 +1,7 @@
 """NCBI Taxonomies read NCBI's taxonomy dumps"""
 
 from own_exceptions import DoubleRelies
+from own_objects import ProteinLink
 
 def read_names_dump(file_path):
     """Reads names from a dump file.
@@ -64,8 +65,10 @@ def read_nodes_dump(file_path):
 
     return relies
 
-def read_protein_taxid_links(file_path):
+def protein_taxid_links(file_path):
     """Reads protein - taxid links from NCBI link DB.
+
+    Generator goes through protein links one by one
 
     Params:
         file_path (str): Path to a name dmp file.
@@ -82,8 +85,6 @@ def read_protein_taxid_links(file_path):
 
     """
 
-    links = {}
-
     with open(file_path, 'r') as in_file:
         for link in in_file:
             if link.startswith('accession'):
@@ -92,8 +93,9 @@ def read_protein_taxid_links(file_path):
             link = link.split()
             protein_acc = link[0]
             taxid = link[2]
-            links[protein_acc] = taxid
-    return links
+
+            yield ProteinLink(protein_id=protein_acc,
+                              taxid=taxid)
 
 if __name__ == "__main__":
     import doctest
