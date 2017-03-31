@@ -10,12 +10,14 @@ pip install pymongo
 
 
 ## Creating a local database
-In order to run software you need to install [MongoDB](https://www.mongodb.com/) database. Database configuration is specified in the file **db.cfg**. File contains 3 parameters and comment lines:
+In order to run software you need to install [MongoDB](https://www.mongodb.com/) database. Database configuration is specified in the file **db.cfg**. File is JSON formatted and contains 3 parameters:
 ```
 # This is comment line that is omitted by parser.
-HOSTNAME=localhost
-PORT=27017
-NAME=TaxIDMapper
+{
+"HOSTNAME": "localhost",
+"PORT": 27017,
+"NAME": "TaxIDMapper"
+}
 ```
 You don't need to create specific databases and collections, it will be done autmatically when first records will be added. However keep in mind that if you alredy have a database with name as specified in the configuration file, records will be added to already existing one. In such case it might be a smart move to change name in the config file.
 
@@ -64,7 +66,7 @@ You my now use following methods depending on your needs:
   - t.search_scientific_name()
   - t.protein_taxid()
   - t.get_lineage_from_db()
-  
+
 Docstrings will explain you how to use each of the methods. It is important to now, that in order to get protein accession to tax id link, we use accession, not version (e.g. WP_12323, not WP_12323.1). Module **mapper** has a function that returns proper accession:
 ```
 >>> from BioTaxIDMapper.mapper import version_to_accession
@@ -75,7 +77,7 @@ Docstrings will explain you how to use each of the methods. It is important to n
 If you have any questions or suggestions regarding this tool or README file itself, feel free to contact me:
   - **E-mail:** mat . korycinski [at] gmail.com
   - **Twitter:** @mkorycinski
-  
+
 ## Acknowledgments
   - Vikram Alva
   - Andrew Stephens
