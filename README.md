@@ -12,7 +12,6 @@ pip install pymongo
 ## Creating a local database
 In order to run software you need to install [MongoDB](https://www.mongodb.com/) database. Database configuration is specified in the file **db.cfg**. File is JSON formatted and contains 3 parameters:
 ```
-# This is comment line that is omitted by parser.
 {
 "HOSTNAME": "localhost",
 "PORT": 27017,
