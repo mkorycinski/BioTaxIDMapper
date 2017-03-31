@@ -3,6 +3,7 @@
 import doctest
 import pymongo
 import os
+import json
 from pymongo.errors import AutoReconnect
 
 from own_exceptions import NoProteinLink, NoRecord
@@ -27,6 +28,7 @@ def autoreconnect_retry(func, retries=3):
             "Couldn't connect to the database, even after %d retries" % retries)
     return db_op_wrapper
 
+
 class TaxDb(object):
     """Class containing methods to handle users requests for translating
     tax ids into phylogenies.
@@ -35,48 +37,35 @@ class TaxDb(object):
 
     def __init__(self):
         """Connects to the database"""
-        
+
         # Read database configuration from file
         cfg = self.read_db_cfg()
-        
+
         # Parse database configuration
         self.HOSTNAME = cfg['HOSTNAME']
         self.PORT = int(cfg['PORT'])
         self.NAME = cfg['NAME']
-        
-        
+
         self.db_client = pymongo.MongoClient(self.HOSTNAME, self.PORT)
 
         database = self.db_client[self.NAME]
         self.db_nodes = database.nodes
         self.db_links = database.links
-    
-    @staticmethod
-    def read_db_cfg():
-        """Reads database configuration from file."""
-        
-        cfg = {}
-        
-        # Get absolute path to a config file
-        cfg_file = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                   'db.cfg'))
-        
-        with open(cfg_file, 'r') as ifile:
-            for line in ifile:
-                if line.startswith('#'):
-                    continue
 
-                key, val = line.strip().split('=')
-                
-                # Check whether any parameters have double values.
-                if key not in cfg:
-                    cfg[key] = val
-                else:
-                    print('Dubled values for one keyword! Check your '
-                          'config file before running software!')
-                    return False
+    @staticmethod
+    def read_db_cfg(cfg_file=None):
+        """Reads database configuration from JSON file."""
+
+        # Get absolute path to a default config file, if not provided
+        if not cfg_file:
+            cfg_file = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                       'db.cfg'))
+
+        with open(cfg_file, 'r') as handle:
+            cfg = json.load(handle)
+
         return cfg
-    
+
     def disconnect(self):
         """Closes connection to the database"""
 

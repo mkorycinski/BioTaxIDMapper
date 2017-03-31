@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.abspath('..'))
 from taxonomydb import TaxDb
 from own_objects import Node, ProteinLink
 
+
 class TestTaxDb(unittest.TestCase):
     """Tests for TaxDb class"""
 
@@ -39,18 +40,18 @@ class TestTaxDb(unittest.TestCase):
         # purposes
         for i in range(10, -1, -1):
             if i == 0:
-                parent = unicode(0)
+                parent = '0'
             else:
-                parent = unicode(i - 1)
+                parent = str(i - 1)
 
             # Insert into nodes collection of the database
-            cls.db_pymongo.nodes.insert_one({'TaxID': unicode(i),
+            cls.db_pymongo.nodes.insert_one({'TaxID': str(i),
                                              'SciName': u'Species_lvl_%d' % i,
                                              'Parent': parent})
 
             # Insert into nodes collection of the database
             cls.db_pymongo.links.insert_one({'ProteinID': u'P%d' % i,
-                                             'TaxID': unicode(i)})
+                                             'TaxID': str(i)})
 
     def test_add_record(self):
         """Testing TaxDb.add_record method"""
