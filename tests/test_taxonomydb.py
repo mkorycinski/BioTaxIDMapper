@@ -9,14 +9,14 @@ import os
 import sys
 import unittest
 import pymongo
-
+import json
 # Assures that even if package is not installed, or codebase
 # is in isolated environment, developer can run tests.
 sys.path.insert(0, os.path.abspath('..'))
 
 # Import from modules we gonna test
-from taxonomydb import TaxDb
-from own_objects import Node, ProteinLink
+from BioTaxIDMapper.taxonomydb import TaxDb
+from BioTaxIDMapper.own_objects import Node, ProteinLink
 
 
 class TestTaxDb(unittest.TestCase):
@@ -26,15 +26,18 @@ class TestTaxDb(unittest.TestCase):
     def setUpClass(cls):
         """Setting up temporary database for testing"""
 
+        test_cfg_file = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                        'test_files/test.cfg'))
+
         # Create an instance of a class we gonna test
-        TaxDb.NAME = 'TaxIDMapper_test'
-        cls.database = TaxDb()
+        cls.test_cfg= cls.load_cfg(test_cfg_file)
+        cls.database = TaxDb(test_cfg_file)
 
         # Connect to the same database with pymongo interface
         # to avoid using more than one method from TaxDb class
         # in a single test.
         cls.client = pymongo.MongoClient()
-        cls.db_pymongo = cls.client[TaxDb.NAME]
+        cls.db_pymongo = cls.client[cls.test_cfg['NAME']]
 
         # Let's create 10 auto-generated entries for test
         # purposes
@@ -53,6 +56,12 @@ class TestTaxDb(unittest.TestCase):
             cls.db_pymongo.links.insert_one({'ProteinID': u'P%d' % i,
                                              'TaxID': str(i)})
 
+    @staticmethod
+    def load_cfg(in_file):
+        """Loads test db cfg from a file"""
+        with open(in_file, 'r') as ifile:
+            return json.load(ifile)
+
     def test_add_record(self):
         """Testing TaxDb.add_record method"""
 
@@ -63,15 +72,15 @@ class TestTaxDb(unittest.TestCase):
         self.database.add_record(node_entry)
 
         # read results with pymongo
-        result = self.db_pymongo.nodes.find_one({'TaxID':'11'})
+        result = self.db_pymongo.nodes.find_one({'TaxID': '11'})
 
         # remove unique ID given by MongoDB client
         result.pop('_id')
 
         # what we expect to receive
-        expected = {'TaxID':'11',
-                    'SciName':'Test_node_11_parent_22',
-                    'Parent':'10'}
+        expected = {'TaxID': '11',
+                    'SciName': 'Test_node_11_parent_22',
+                    'Parent': '10'}
 
         # db.delete_one({'TaxID':'11'})
 
@@ -138,22 +147,22 @@ class TestTaxDb(unittest.TestCase):
         # Assert if we get what we want
         self.assertEqual(first=record, second=expected)
 
-    def test_get_lineage_from_db(self):
-        """Tests TaxDb.get_lineage_from_db method"""
-
-        # Method we want to test
-        record = self.database.get_lineage_from_db('10')
-
-        # What we expect
-        expected = [u'Species_lvl_%d' % i for i in range(0, 11)]
-
-        # Assert if we get what we want
-        self.assertListEqual(list1=record, list2=expected)
+    # def test_get_lineage_from_db(self):
+    #     """Tests TaxDb.get_lineage_from_db method"""
+    #
+    #     # Method we want to test
+    #     record = self.database.get_lineage_from_db('10')
+    #
+    #     # What we expect
+    #     expected = [u'Species_lvl_%d' % i for i in range(0, 11)]
+    #
+    #     # Assert if we get what we want
+    #     self.assertListEqual(list1=record, list2=expected)
 
     @classmethod
     def tearDownClass(cls):
         """Cleanup after all tests run"""
-        cls.client.drop_database(cls.database.NAME)
+        cls.client.drop_database(cls.test_cfg['NAME'])
 
 if __name__ == '__main__':
     unittest.main()

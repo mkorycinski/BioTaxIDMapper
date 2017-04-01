@@ -5,3 +5,4 @@ TaxIDMapper_old.py
 TaxIDMapper.py
 .idea
 *.pyc
+./__pycache__

@@ -35,11 +35,14 @@ class TaxDb(object):
 
     """
 
-    def __init__(self):
+    def __init__(self, cfg_file=None):
         """Connects to the database"""
 
         # Read database configuration from file
-        cfg = self.read_db_cfg()
+        if not cfg_file:
+            cfg_file = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                    'db.cfg'))
+        cfg = self.read_db_cfg(cfg_file)
 
         # Parse database configuration
         self.HOSTNAME = cfg['HOSTNAME']
@@ -57,10 +60,6 @@ class TaxDb(object):
         """Reads database configuration from JSON file."""
 
         # Get absolute path to a default config file, if not provided
-        if not cfg_file:
-            cfg_file = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                       'db.cfg'))
-
         with open(cfg_file, 'r') as handle:
             cfg = json.load(handle)
 
